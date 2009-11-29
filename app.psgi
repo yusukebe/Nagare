@@ -8,8 +8,29 @@ use Tatsumaki::Application;
 use Tatsumaki::MessageQueue;
 use Nagare::Service::IRC; #xxx 
 
+package PollHandler;
+use base qw(Tatsumaki::Handler);
+__PACKAGE__->asynchronous(1);
+
+use Tatsumaki::MessageQueue;
+
+sub get {
+    my($self, $channel) = @_;
+    my $mq = Tatsumaki::MessageQueue->instance($channel);
+    my $client_id = $self->request->param('client_id')
+        or Tatsumaki::Error::HTTP->throw(500, "'client_id' needed");
+    $client_id = rand(1) if $client_id eq 'dummy'; # for benchmarking stuff
+    $mq->poll_once($channel, sub { $self->on_new_event(@_) });
+}
+
+sub on_new_event {
+    my($self, @events) = @_;
+    $self->write(\@events);
+    $self->finish;
+}
+
 package MultipartPollHandler;
-use base ('Tatsumaki::Handler');
+use base qw(Tatsumaki::Handler);
 
 __PACKAGE__->asynchronous(1);
 
@@ -17,6 +38,9 @@ sub get {
     my ( $self, $channel ) = @_;
     my $session = $self->request->param('session')
       or Tatsumaki::Error::HTTP->throw( 500, "'session' needed" );
+
+    $self->multipart_xhr_push(1);
+
     my $mq = Tatsumaki::MessageQueue->instance($channel);
     $mq->poll(
         $session,
@@ -29,8 +53,15 @@ sub get {
     );
 }
 
+package ChannelHandler;
+use base qw(Tatsumaki::Handler);
+sub get {
+    my ($self, $channel) = @_;
+    $self->render('channel.html');
+}
+
 package MainHandler;
-use base ('Tatsumaki::Handler');
+use base qw(Tatsumaki::Handler);
 sub get {
     my $self = shift;
     $self->render('index.html');
@@ -39,16 +70,16 @@ sub get {
 package main;
 use File::Basename;
 
-my $irc_re = '\w+';
+my $irc_re = '[\w\-]+';
 my $app = Tatsumaki::Application->new([
-    "/irc/($irc_re)/poll" => 'PollHandler',
-    "/irc/($irc_re)/mxhrpoll" => 'MultipartPollHandler',
-    "/irc/($irc_re)" => 'ChannelHandler',
+    "/channel/($irc_re)/poll" => 'PollHandler',
+    "/channel/($irc_re)/mxhrpoll" => 'MultipartPollHandler',
+    "/channel/($irc_re)" => 'ChannelHandler',
     "/" => 'MainHandler',
 ]);
 
-$app->template_path(dirname(__FILE__) . "/tmpl");
+$app->template_path(dirname(__FILE__) . "/templates");
 $app->static_path(dirname(__FILE__) . "/static");
-my $svc = Nagare::Service::IRC->new();
+my $svc = Nagare::Service::IRC->new( channel => 'nagare-test' );
 $app->add_service( $svc );
 return $app;
