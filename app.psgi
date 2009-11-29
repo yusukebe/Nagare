@@ -8,7 +8,7 @@ use Tatsumaki::Application;
 use Tatsumaki::MessageQueue;
 use Nagare::Service::IRC; #xxx 
 
-package MutipartPollHandler;
+package MultipartPollHandler;
 use base ('Tatsumaki::Handler');
 
 __PACKAGE__->asynchronous(1);
