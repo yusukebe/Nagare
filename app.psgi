@@ -29,6 +29,13 @@ sub get {
     );
 }
 
+package MainHandler;
+use base ('Tatsumaki::Handler');
+sub get {
+    my $self = shift;
+    $self->render('index.html');
+}
+
 package main;
 use File::Basename;
 
