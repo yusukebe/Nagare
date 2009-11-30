@@ -7,6 +7,7 @@ use Tatsumaki::Error;
 use Tatsumaki::Application;
 use Tatsumaki::MessageQueue;
 use Nagare::Service::IRC; #xxx 
+use Nagare::Service::Twitter; #xxx 
 
 package PollHandler;
 use base qw(Tatsumaki::Handler);
@@ -16,8 +17,8 @@ use Tatsumaki::MessageQueue;
 
 sub get {
     my($self, $channel) = @_;
-    warn "$channel";
     my $mq = Tatsumaki::MessageQueue->instance($channel);
+    warn "$channel\n";
     my $client_id = $self->request->param('client_id')
         or Tatsumaki::Error::HTTP->throw(500, "'client_id' needed");
     $client_id = rand(1) if $client_id eq 'dummy'; # for benchmarking stuff
@@ -76,11 +77,14 @@ my $app = Tatsumaki::Application->new([
     "/channel/($irc_re)/poll" => 'PollHandler',
     "/channel/($irc_re)/mxhrpoll" => 'MultipartPollHandler',
     "/channel/($irc_re)" => 'ChannelHandler',
+    "/twitter"=> 'TwitterHandler',
     "/" => 'MainHandler',
 ]);
 
 $app->template_path(dirname(__FILE__) . "/templates");
 $app->static_path(dirname(__FILE__) . "/static");
-my $svc = Nagare::Service::IRC->new( channel => 'nagare-test' );
-$app->add_service( $svc );
+#my $irc = Nagare::Service::IRC->new( channel => '#nagare-test' );
+my $twitter = Nagare::Service::Twitter->new( user => '', password => '' );
+$twitter->setup();
+$app->add_service( $twitter );
 return $app;
