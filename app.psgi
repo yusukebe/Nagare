@@ -37,14 +37,14 @@ __PACKAGE__->asynchronous(1);
 
 sub get {
     my ( $self, $channel ) = @_;
-    my $session = $self->request->param('session')
-      or Tatsumaki::Error::HTTP->throw( 500, "'session' needed" );
+    my $client_id = $self->request->param('client_id')
+      or Tatsumaki::Error::HTTP->throw( 500, "'client_id' needed" );
 
     $self->multipart_xhr_push(1);
 
     my $mq = Tatsumaki::MessageQueue->instance($channel);
     $mq->poll(
-        $session,
+        $client_id,
         sub {
             my @events = @_;
             for my $event (@events) {

@@ -21,11 +21,12 @@
 $(function(){
   var onNewEvent = function(e) {
     try {
-      if(e[0]){
+      if(e){
+        if(typeof e[0] != 'undefined'){ e = e[0]; }
         var message = $('<p/>');
-        var time = $('<span/>').addClass('time').text(e[0].time + ' ');
-        var name = $('<span/>').addClass('name').text(e[0].name + ': ');
-        var text = $('<span/>').addClass('text').html(e[0].text);
+        var time = $('<span/>').addClass('time').text(e.time + ' ');
+        var name = $('<span/>').addClass('name').text(e.name + ': ');
+        var text = $('<span/>').addClass('text').html(e.text);
         var message = $('<p/>').append(time).append(name).append(text);
         message.find('a').oembed(null, { embedMethod: "append", maxWidth: 500 });
         $('#messages').prepend( message );
@@ -38,9 +39,9 @@ $(function(){
       var event = eval('(' + payload + ')');
       onNewEvent(event);
     });
-    s.load('/channel/<%= $channel %>/mxhrpoll');
+    s.load('/channel/<%= $channel %>/mxhrpoll?client_id=' + Date.now());
   } else {
-    $.ev.loop('/channel/<%= $channel %>/poll?client_id=' + Date.now(), onNewEvent );
+    $.ev.loop('/channel/<%= $channel %>/poll?client_id=' + Date.now(), onNewEvent);
   }
 });
 </script>
