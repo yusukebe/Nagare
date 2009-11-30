@@ -54,7 +54,7 @@ sub start {
     my ($self, $channel) = @_;
     $channel = '#nagare-test'; #xxx
     my $nick = 'irc_stream';    #xxx
-    $self->irc->send_srv( "JOIN", $channel );
+    $self->join_channel( $channel );
     $self->irc->connect( "irc.freenode.net", 6667,
         { nick => $nick, user => $nick, real => $nick } );
 }

@@ -16,11 +16,12 @@ use Tatsumaki::MessageQueue;
 
 sub get {
     my($self, $channel) = @_;
+    warn "$channel";
     my $mq = Tatsumaki::MessageQueue->instance($channel);
     my $client_id = $self->request->param('client_id')
         or Tatsumaki::Error::HTTP->throw(500, "'client_id' needed");
     $client_id = rand(1) if $client_id eq 'dummy'; # for benchmarking stuff
-    $mq->poll_once($channel, sub { $self->on_new_event(@_) });
+    $mq->poll_once($client_id, sub { $self->on_new_event(@_) });
 }
 
 sub on_new_event {
