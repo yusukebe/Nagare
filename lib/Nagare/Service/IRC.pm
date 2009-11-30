@@ -4,7 +4,9 @@ use AnyEvent::IRC::Client;
 
 extends 'Tatsumaki::Service';
 has irc => ( is => 'rw', isa => 'AnyEvent::IRC::Client', lazy_build => 1 );
-has channel => ( is => 'rw', isa => 'Str' ); #xxx;
+has server => ( is => 'rw', isa => 'Str', default => 'irc.freenode.net' );
+has port => ( is => 'rw', isa => 'Int', default => 6667 );
+has nick => ( is => 'rw', isa => 'Str', required => 1  );
 
 sub _build_irc {
     my ($self) = @_;
@@ -53,13 +55,12 @@ sub _build_irc {
 
 sub start {
   my $self = shift;
-  $self->irc->send_srv( "JOIN", $self->channel );
 }
 
 sub setup {
     my $self = shift;
-    my $nick = 'irc_stream';    #xxx
-    $self->irc->connect( "irc.freenode.net", 6667,
+    my $nick = $self->nick;    #xxx
+    $self->irc->connect( $self->server, $self->port,
         { nick => $nick, user => $nick, real => $nick } );
 }
 

@@ -1,43 +1,11 @@
-% my $channel = $_[0]->{handler}->args->[0];
-% my $mxhr = $_[0]->{handler}->request->param('mxhr');
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf8">
-<title>Nagare</title>
-% if ($mxhr) {
-<script src="/static/DUI.js"></script>
-<script src="/static/Stream.js"></script>
-% } else {
-<script src="/static/jquery.ev.js"></script>
-% }
-<script src="/static/jquery.oembed.js"></script>
-<script src="/static/pretty.js"></script>
-<script>
-$(function(){
-  var onNewEvent = function(e) {
-    try {
-      console.log('e');
-    } catch(e) { if (console) console.log(e) };
-  };
-  if (typeof DUI != 'undefined') {
-    var s = new DUI.Stream();
-    s.listen('application/json', function(payload) {
-      var event = eval('(' + payload + ')');
-      onNewEvent(event);
-    });
-    s.load('/chat/<%= $channel %>/mxhrpoll');
-  } else {
-    $.ev.handlers.message = onNewEvent;
-    $.ev.loop('/chat/<%= $channel %>/poll?client_id=' + Math.random());
-  }
-});
-</script>
 </head>
 <body>
 <h1>Nagare</h1>
-
+<a href="/channel/nagare-test">nagare-test@freenode</a>
 <hr>
 <address></address>
 </body> </html>

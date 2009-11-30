@@ -77,14 +77,15 @@ my $app = Tatsumaki::Application->new([
     "/channel/($irc_re)/poll" => 'PollHandler',
     "/channel/($irc_re)/mxhrpoll" => 'MultipartPollHandler',
     "/channel/($irc_re)" => 'ChannelHandler',
-    "/twitter"=> 'TwitterHandler',
     "/" => 'MainHandler',
 ]);
 
 $app->template_path(dirname(__FILE__) . "/templates");
-$app->static_path(dirname(__FILE__) . "/static");
-#my $irc = Nagare::Service::IRC->new( channel => '#nagare-test' );
-my $twitter = Nagare::Service::Twitter->new( user => '', password => '' );
-$twitter->setup();
-$app->add_service( $twitter );
+$app->static_path( dirname(__FILE__) . "/static" );
+my $svc = Nagare::Service::IRC->new(
+    server  => '192.168.1.3', # my private tiarra address ^^;
+    nick    => 'yusukebe', # my nick name ^^;
+);
+$svc->setup();
+$app->add_service( $svc );
 return $app;
