@@ -2,10 +2,37 @@
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<title>Nagare</title>
+<link rel="stylesheet" href="http://yui.yahooapis.com/2.7.0/build/reset-fonts-grids/reset-fonts-grids.css" type="text/css">
+<link rel="stylesheet" href="/static/nagare.css" type="text/css">
 </head>
 <body>
+
+<div id="doc" class="yui-t4">
+<div id="hd">
 <h1>Nagare</h1>
-<a href="/channel/nagare-test">nagare-test@freenode</a>
-<hr>
-<address></address>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b"><div class="yui-g">
+<ul>
+% for my $channel (@{$_[0]->{channels}}) {
+% my $path = $channel;
+% $path =~ s/^#//;
+% $path = URI::Escape::uri_escape_utf8( $path );
+  <li><a href="/channel/<%= $path %>?mxhr=1"><%= $channel %></a></li>
+% }
+</ul>
+</div>
+</div>
+<!-- /yui-g -->
+</div>
+<!-- /yui-b -->
+</div>
+<div class="yui-b">
+<!-- YOUR NAVIGATION GOES HERE -->
+</div>
+</div>
+<div id="ft"><p></p></div>
+</div>
 </body> </html>

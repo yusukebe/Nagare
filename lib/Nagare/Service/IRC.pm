@@ -11,6 +11,7 @@ has server => ( is => 'rw', isa => 'Str', default => 'irc.freenode.net' );
 has port => ( is => 'rw', isa => 'Int', default => 6667 );
 has nick => ( is => 'rw', isa => 'Str', required => 1  );
 has debug => ( is => 'rw', isa => 'Int', default => 0 );
+has channels => ( is => 'rw', isa => 'ArrayRef', auto_deref => 1, default => sub {[]} );
 
 sub _build_irc {
     my ($self) = @_;
@@ -32,9 +33,17 @@ sub _build_irc {
         }
     );
     $irc->reg_cb(
+        join => sub {
+            my ($con,$nick,$channel,$is_myself) = @_;
+            my @channels = $self->channels;
+            push(@channels, $channel);
+            $self->channels(\@channels);
+        }
+    );
+    $irc->reg_cb(
         publicmsg => sub {
             my ( $con, $channel, $packet ) = @_;
-            $channel =~ s/\@.*$//;    # bouncer (tiarra)
+#            $channel =~ s/\@.*$//;    # bouncer (tiarra)
             $channel =~ s/^#//;
             if (   $packet->{command} eq 'NOTICE'
                 || $packet->{command} eq 'PRIVMSG' )

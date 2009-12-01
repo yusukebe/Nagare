@@ -4,7 +4,7 @@ use FindBin;
 use lib ("$FindBin::Bin/lib");
 use Tatsumaki;
 use Tatsumaki::Error;
-use Tatsumaki::Application;
+use Nagare::Application;
 use Tatsumaki::MessageQueue;
 use Nagare::Service::IRC; #xxx 
 use Nagare::Service::Twitter; #xxx 
@@ -65,14 +65,15 @@ package MainHandler;
 use base qw(Tatsumaki::Handler);
 sub get {
     my $self = shift;
-    $self->render('index.html');
+    my $channels = $self->application->get_channels();
+    $self->render( 'index.html', { channels => $channels } );
 }
 
 package main;
 use File::Basename;
 
-my $irc_re = '[\w\-]+';
-my $app = Tatsumaki::Application->new([
+my $irc_re = '[\w\-\.@]+';
+my $app = Nagare::Application->new([
     "/channel/($irc_re)/poll" => 'PollHandler',
     "/channel/($irc_re)/mxhrpoll" => 'MultipartPollHandler',
     "/channel/($irc_re)" => 'ChannelHandler',
@@ -81,10 +82,10 @@ my $app = Tatsumaki::Application->new([
 
 $app->template_path(dirname(__FILE__) . "/templates");
 $app->static_path( dirname(__FILE__) . "/static" );
-my $svc = Nagare::Service::IRC->new(
+my $irc = Nagare::Service::IRC->new(
     server  => '192.168.1.3', # my private tiarra address ^^;
     nick    => 'yusukebe', # my nick name ^^;
 );
-$svc->setup();
-$app->add_service( $svc );
+$irc->setup();
+$app->add_irc_service( $irc );
 return $app;
