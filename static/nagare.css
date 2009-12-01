@@ -1,4 +1,7 @@
 h1 { font-weight: bold; margin: 10px 0; }
+h1 a { color:#000; text-decoration:none; }
 span.time{ color:#4F5E86 }
 span.name{ color:#001B6A }
-span.text{ color:#000 }
+span.notice { color:#666 }
+li.channel a{ color:#000; text-decoration:none; }
+li.unread a{ color:blue; font-weight:bold; }

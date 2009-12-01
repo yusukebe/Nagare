@@ -35,15 +35,18 @@ sub _build_irc {
     $irc->reg_cb(
         join => sub {
             my ($con,$nick,$channel,$is_myself) = @_;
+            $channel =~ s/^#//;
             my @channels = $self->channels;
-            push(@channels, $channel);
-            $self->channels(\@channels);
+            unless( grep { $_->{name} eq $channel } @channels ){
+                push(@channels, { name => $channel, updated => 0 } );
+                $self->channels(\@channels);
+                $self->push_channels;
+            }
         }
     );
     $irc->reg_cb(
         publicmsg => sub {
             my ( $con, $channel, $packet ) = @_;
-#            $channel =~ s/\@.*$//;    # bouncer (tiarra)
             $channel =~ s/^#//;
             if (   $packet->{command} eq 'NOTICE'
                 || $packet->{command} eq 'PRIVMSG' )
@@ -58,12 +61,32 @@ sub _build_irc {
                         time    => DateTime->now( time_zone => 'Asia/Tokyo' )->hms(':'),
                         name    => $who,
                         text    => Encode::decode_utf8($self->format_message($msg)),
+                        command => lc( $packet->{command} ),
                     }
                 );
+                $self->update_channel_status($channel,1) if $packet->{command} eq 'PRIVMSG';
             }
         }
     );
     return $irc;
+}
+
+sub push_channels {
+    my $self = shift;
+    my $mq = Tatsumaki::MessageQueue->instance('list');
+    my $channels = $self->channels();
+    $mq->publish( { channel => 'list', channels => $channels } );
+}
+
+sub update_channel_status {
+    my ( $self, $name, $status ) = @_;
+    my @channels = ();
+    for my $channel ($self->channels()){
+        $channel->{updated} = $status if $channel->{name} =~ /$name/;
+        push(@channels, $channel);
+    }
+    $self->channels(\@channels);
+    $self->push_channels();
 }
 
 sub format_message {

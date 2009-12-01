@@ -26,7 +26,7 @@ $(function(){
         var message = $('<p/>');
         var time = $('<span/>').addClass('time').text(e.time + ' ');
         var name = $('<span/>').addClass('name').text(e.name + ': ');
-        var text = $('<span/>').addClass('text').html(e.text);
+        var text = $('<span/>').addClass('text').addClass(e.command).html(e.text);
         var message = $('<p/>').append(time).append(name).append(text);
         message.find('a').oembed(null, { embedMethod: "append", maxWidth: 500 });
         $('#messages').prepend( message );

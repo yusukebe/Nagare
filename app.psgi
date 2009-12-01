@@ -12,7 +12,6 @@ use Nagare::Service::Twitter; #xxx
 package PollHandler;
 use base qw(Tatsumaki::Handler);
 __PACKAGE__->asynchronous(1);
-
 use Tatsumaki::MessageQueue;
 
 sub get {
@@ -32,7 +31,6 @@ sub on_new_event {
 
 package MultipartPollHandler;
 use base qw(Tatsumaki::Handler);
-
 __PACKAGE__->asynchronous(1);
 
 sub get {
@@ -54,10 +52,23 @@ sub get {
     );
 }
 
+package ListPollHandler;
+use base qw(Tatsumaki::Handler);
+__PACKAGE__->asynchronous(1);
+
+sub get {
+    my $self = shift;
+    my $mq = Tatsumaki::MessageQueue->instance('list');
+    my $client_id = $self->request->param('client_id')
+        or Tatsumaki::Error::HTTP->throw(500, "'client_id' needed");
+    $mq->poll_once($client_id, sub { $self->on_new_event(@_) });
+}
+
 package ChannelHandler;
 use base qw(Tatsumaki::Handler);
 sub get {
     my ($self, $channel) = @_;
+    $self->application->irc_service->update_channel_status( $channel,0 );
     $self->render('channel.html');
 }
 
@@ -77,6 +88,7 @@ my $app = Nagare::Application->new([
     "/channel/($irc_re)/poll" => 'PollHandler',
     "/channel/($irc_re)/mxhrpoll" => 'MultipartPollHandler',
     "/channel/($irc_re)" => 'ChannelHandler',
+    "/(list)/mxhrpoll" => 'MultipartPollHandler',
     "/" => 'MainHandler',
 ]);
 
